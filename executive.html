@@ -120,7 +120,17 @@
      SUPABASE_URL,
      SUPABASE_PUBLISHABLE_KEY
   );
+    
+  window.addEventListener('pageshow', () => {
+    const status = document.getElementById('status');
 
+    if (status) {
+      status.className = 'status';
+      status.textContent = '';
+    }
+  });
+
+  // your existing code continues here...
     const copyBtn=document.getElementById('copyAccount');
     copyBtn.addEventListener('click',async()=>{try{await navigator.clipboard.writeText('8131579706');copyBtn.textContent='Copied!';setTimeout(()=>copyBtn.textContent='Copy',1400)}catch(e){copyBtn.textContent='8131579706'}});
     const receipt=document.getElementById('receipt'),fileName=document.getElementById('fileName'),uploadBox=document.getElementById('uploadBox');
