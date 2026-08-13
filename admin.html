@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MUMSA Admin</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f4f7f6;
+      padding: 20px;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: white;
+      padding: 40px;
+      border-radius: 18px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+    }
+
+    .logo {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 800;
+      color: #075e54;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #777;
+      margin-bottom: 30px;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    .back-home {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #1f5c4a;
+  font-size: 14px;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+.back-home span:first-child {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.back-home:hover {
+  transform: translateX(-3px);
+  opacity: 0.8;
+}
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #075e54;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: #075e54;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #status {
+      margin-top: 18px;
+      padding: 12px;
+      border-radius: 8px;
+      display: none;
+      font-size: 14px;
+    }
+
+    #status.show {
+      display: block;
+    }
+
+    #status.error {
+      background: #ffe8e8;
+      color: #b00020;
+    }
+
+    #status.success {
+      background: #e8f7ef;
+      color: #087443;
+    }
+  </style>
+</head>
+
+<body>
+    <a href="index.html" class="back-home">
+      <span>←</span>
+      <span>Back to Home</span>
+    </a>
+  <div class="login-card">
+
+    <div class="logo">MUMSA</div>
+
+    <p class="subtitle">Symposium 2026 Admin Portal</p>
+
+    <form id="loginForm">
+
+      <div class="field">
+        <label for="email">Admin Email</label>
+        <input
+          id="email"
+          type="email"
+          placeholder="admin@example.com"
+          required
+        >
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          placeholder="Enter your password"
+          required
+        >
+      </div>
+
+      <button type="submit" id="loginBtn">
+        Sign In
+      </button>
+
+      <div id="status"></div>
+
+    </form>
+
+  </div>
+
+  <script>
+
+    const SUPABASE_URL = "https://ghxiagcivbnulpxaosvv.supabase.co";
+
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_CAZIsF-HFE-AtGnuk6aVZw_hE9w7_iS";
+
+    const supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+      );
+
+
+    const loginForm = document.getElementById("loginForm");
+    const loginBtn = document.getElementById("loginBtn");
+    const status = document.getElementById("status");
+
+
+    function showStatus(message, type) {
+      status.textContent = message;
+      status.className = `show ${type}`;
+    }
+
+
+    loginForm.addEventListener("submit", async (e) => {
+
+      e.preventDefault();
+
+      const email =
+        document.getElementById("email").value.trim();
+
+      const password =
+        document.getElementById("password").value;
+
+
+      loginBtn.disabled = true;
+      loginBtn.textContent = "Signing in…";
+
+
+      const { data, error } =
+        await supabaseClient.auth.signInWithPassword({
+          email,
+          password
+        });
+
+
+      if (error) {
+
+        console.error(error);
+
+        showStatus(
+          "Invalid email or password. Please try again.",
+          "error"
+        );
+
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Sign In";
+
+        return;
+      }
+
+
+      showStatus(
+        "Login successful! Opening dashboard…",
+        "success"
+      );
+
+
+      setTimeout(() => {
+        window.location.href = "dashboard.html";
+      }, 700);
+
+    });
+
+  </script>
+
+</body>
+</html>

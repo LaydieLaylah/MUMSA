@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>MUMSA Admin Dashboard</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7f6;
+      color: #1f2933;
+    }
+
+    header {
+      background: #075e54;
+      color: white;
+      padding: 18px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .brand span {
+      display: block;
+      font-size: 12px;
+      font-weight: 400;
+      opacity: .8;
+      margin-top: 3px;
+    }
+
+    #logoutBtn {
+      border: none;
+      background: rgba(255,255,255,.15);
+      color: white;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    main {
+      max-width: 1400px;
+      margin: auto;
+      padding: 30px;
+    }
+
+    .welcome {
+      margin-bottom: 25px;
+    }
+
+    .welcome h1 {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .welcome p {
+      color: #68737d;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-bottom: 30px;
+    }
+
+    .stat {
+      background: white;
+      padding: 22px;
+      border-radius: 14px;
+      box-shadow: 0 5px 20px rgba(0,0,0,.05);
+    }
+
+    .stat-label {
+      color: #737d86;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .stat-number {
+      font-size: 30px;
+      font-weight: 800;
+      color: #075e54;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 5px 20px rgba(0,0,0,.05);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .panel-header h2 {
+      font-size: 19px;
+    }
+    .action-btn {
+    border: none;
+    padding: 7px 10px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    margin-right: 5px;
+    }
+
+    .confirm-btn {
+    background: #e4f7eb;
+    color: #087443;
+    }
+    .action-btn:hover {
+    opacity: 0.8;
+    }
+    #search {
+      padding: 10px 13px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      width: 260px;
+      outline: none;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1000px;
+    }
+
+    th,
+    td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f8faf9;
+      color: #59636b;
+      font-size: 13px;
+    }
+
+    tr:hover {
+      background: #fafcfb;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .member {
+      background: #e8f0ff;
+      color: #315caa;
+    }
+
+    .executive {
+      background: #fff1d8;
+      color: #996300;
+    }
+
+    .pending {
+      background: #fff4d6;
+      color: #8a6200;
+    }
+
+    .confirmed {
+      background: #e4f7eb;
+      color: #087443;
+    }
+
+    .receipt-btn {
+      border: none;
+      background: #075e54;
+      color: white;
+      padding: 7px 11px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .empty {
+      padding: 40px;
+      text-align: center;
+      color: #777;
+    }
+
+    .loading {
+      padding: 40px;
+      text-align: center;
+      color: #777;
+    }
+
+    @media (max-width: 900px) {
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      main {
+        padding: 20px;
+      }
+
+    }
+
+    @media (max-width: 600px) {
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        padding: 15px;
+      }
+
+      main {
+        padding: 15px;
+      }
+
+      #search {
+        width: 100%;
+      }
+
+      .panel-header {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+    }
+
+  </style>
+</head>
+
+<body>
+
+<header>
+
+  <div class="brand">
+    MUMSA
+    <span>Symposium 2026 • Admin Portal</span>
+  </div>
+
+  <button id="logoutBtn">
+    Logout
+  </button>
+
+</header>
+
+
+<main>
+
+  <div class="welcome">
+
+    <h1>Registration Dashboard</h1>
+
+    <p>
+      Manage MUMSA Symposium 2026 registrations and payment confirmations.
+    </p>
+
+  </div>
+
+
+  <!-- STATISTICS -->
+
+  <section class="stats">
+
+    <div class="stat">
+      <div class="stat-label">Total Registrations</div>
+      <div class="stat-number" id="totalCount">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">Members</div>
+      <div class="stat-number" id="memberCount">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">Executives</div>
+      <div class="stat-number" id="executiveCount">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">Confirmed</div>
+      <div class="stat-number" id="confirmedCount">—</div>
+    </div>
+
+  </section>
+
+
+  <!-- REGISTRATIONS -->
+
+  <section class="panel">
+
+    <div class="panel-header">
+
+      <h2>Registrations</h2>
+
+      <input
+        id="search"
+        type="search"
+        placeholder="Search name, matric, department..."
+      >
+
+    </div>
+
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>Name</th>
+            <th>Matric No.</th>
+            <th>Department</th>
+            <th>Type</th>
+            <th>Office</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Receipt</th>
+            <th>Action</th>
+          </tr>
+
+        </thead>
+
+        <tbody id="registrationTable">
+
+          <tr>
+            <td colspan="9" class="loading">
+              Loading registrations…
+            </td>
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+</main>
+
+
+<script>
+
+  /* ==============================
+     SUPABASE
+  ============================== */
+
+  const SUPABASE_URL =
+    "https://ghxiagcivbnulpxaosvv.supabase.co";
+
+  const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_CAZIsF-HFE-AtGnuk6aVZw_hE9w7_iS";
+
+  const supabaseClient =
+    window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+
+
+  /* ==============================
+     ELEMENTS
+  ============================== */
+
+  const table =
+    document.getElementById("registrationTable");
+
+  const search =
+    document.getElementById("search");
+
+
+  let registrations = [];
+
+
+  /* ==============================
+     AUTH CHECK
+  ============================== */
+
+  async function checkAuth() {
+
+    const {
+      data: { session }
+    } = await supabaseClient.auth.getSession();
+
+
+    if (!session) {
+
+      window.location.href = "admin.html";
+
+      return false;
+
+    }
+
+    return true;
+
+  }
+
+
+  /* ==============================
+     LOAD REGISTRATIONS
+  ============================== */
+
+  async function loadRegistrations() {
+    console.log("Supabase client:", supabaseClient);
+
+    const { data: testData, error: testError } =
+     await supabaseClient
+      .from("registrations")
+      .select("*");
+
+    console.log("TEST DATA:", testData);
+    console.log("TEST ERROR:", testError);
+    const {
+      data,
+      error
+    } = await supabaseClient
+      .from("registrations")
+      .select("*")
+      .order("created_at", {
+        ascending: false
+      });
+
+
+    if (error) {
+
+      console.error(error);
+
+      table.innerHTML = `
+        <tr>
+          <td colspan="9" class="empty">
+            Could not load registrations.
+            <br><br>
+            ${error.message}
+          </td>
+        </tr>
+      `;
+
+      return;
+
+    }
+
+
+    registrations = data || [];
+
+    updateStats();
+
+    renderTable(registrations);
+
+  }
+
+
+  /* ==============================
+     STATISTICS
+  ============================== */
+
+  function updateStats() {
+
+    const total =
+      registrations.length;
+
+    const members =
+      registrations.filter(
+        r => r.registration_type === "Member"
+      ).length;
+
+    const executives =
+      registrations.filter(
+        r => r.registration_type === "Executive"
+      ).length;
+
+    const confirmed =
+      registrations.filter(
+        r => r.status === "confirmed"
+      ).length;
+
+
+    document.getElementById("totalCount").textContent =
+      total;
+
+    document.getElementById("memberCount").textContent =
+      members;
+
+    document.getElementById("executiveCount").textContent =
+      executives;
+
+    document.getElementById("confirmedCount").textContent =
+      confirmed;
+
+  }
+
+
+  /* ==============================
+     TABLE
+  ============================== */
+
+  function renderTable(rows) {
+
+    if (!rows.length) {
+
+      table.innerHTML = `
+        <tr>
+          <td colspan="9" class="empty">
+            No registrations found.
+          </td>
+        </tr>
+      `;
+
+      return;
+
+    }
+
+
+    table.innerHTML = rows.map(registration => {
+
+      const typeClass =
+        registration.registration_type === "Executive"
+          ? "executive"
+          : "member";
+
+
+      const status =
+        registration.status || "pending";
+
+
+      const statusClass =
+        status === "confirmed"
+          ? "confirmed"
+          : "pending";
+
+
+      return `
+
+        <tr>
+
+          <td>
+            ${escapeHtml(registration.full_name || "—")}
+          </td>
+
+          <td>
+            ${escapeHtml(registration.matric_no || "—")}
+          </td>
+
+          <td>
+            ${escapeHtml(registration.department || "—")}
+          </td>
+
+          <td>
+            <span class="badge ${typeClass}">
+              ${escapeHtml(registration.registration_type || "—")}
+            </span>
+          </td>
+
+          <td>
+            ${escapeHtml(registration.office || "NIL")}
+          </td>
+
+          <td>
+            ₦${registration.amount || "—"}
+          </td>
+
+          <td>
+            <span class="badge ${statusClass}">
+              ${escapeHtml(status)}
+            </span>
+          </td>
+
+          <td>
+
+            ${
+              registration.receipt
+                ? `<button
+                    class="receipt-btn"
+                    onclick="viewReceipt('${encodeURIComponent(registration.receipt)}')">
+                    View Receipt
+                   </button>`
+                : "—"
+            }
+
+          </td>
+          <td>
+  ${
+  status === "confirmed"
+    ? `<span class="confirmed-label">Confirmed</span>`
+    : `<button
+        class="action-btn confirm-btn"
+        onclick="window.confirmPayment('${registration.id}')">
+        Confirm Payment
+      </button>`
+}
+
+         </td>
+        </tr>
+
+      `;
+
+    }).join("");
+
+  }
+
+
+  /* ==============================
+     SEARCH
+  ============================== */
+
+  search.addEventListener("input", () => {
+
+    const query =
+      search.value.toLowerCase().trim();
+
+
+    const filtered =
+      registrations.filter(r => {
+
+        return (
+
+          (r.full_name || "").toLowerCase().includes(query) ||
+
+          (r.matric_no || "").toLowerCase().includes(query) ||
+
+          (r.department || "").toLowerCase().includes(query) ||
+
+          (r.registration_type || "").toLowerCase().includes(query) ||
+
+          (r.office || "").toLowerCase().includes(query)
+
+        );
+
+      });
+
+
+    renderTable(filtered);
+
+  });
+
+
+  /* ==============================
+     RECEIPT
+  ============================== */
+
+  async function viewReceipt(encodedPath) {
+
+    const path =
+      decodeURIComponent(encodedPath);
+
+
+    const {
+      data,
+      error
+    } = await supabaseClient.storage
+      .from("payment-receipts")
+      .createSignedUrl(path, 3600);
+
+
+    if (error) {
+
+      alert(
+        "Could not open receipt: " +
+        error.message
+      );
+
+      return;
+
+    }
+
+
+
+    window.open(
+      data.signedUrl,
+      "_blank"
+    );
+
+  }
+
+
+  /* ==============================
+     LOGOUT
+  ============================== */
+
+  document
+    .getElementById("logoutBtn")
+    .addEventListener("click", async () => {
+
+      await supabaseClient.auth.signOut();
+
+      window.location.href =
+        "admin.html";
+
+    });
+
+
+  /* ==============================
+     ESCAPE HTML
+  ============================== */
+
+  function escapeHtml(value) {
+
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+
+  /* ==============================
+     START
+  ============================== */
+
+  (async () => {
+
+    const authenticated =
+      await checkAuth();
+
+    if (!authenticated) return;
+
+    await loadRegistrations();
+
+  })();
+window.confirmPayment = async function(id) {
+  const confirmed = confirm(
+    "Confirm this payment?\n\nThis will mark the registration as confirmed."
+  );
+
+  if (!confirmed) return;
+
+  const { error } = await supabaseClient
+    .from("registrations")
+    .update({
+      status: "confirmed"
+    })
+    .eq("id", id);
+
+  if (error) {
+    console.error("Confirm payment error:", error);
+    alert("Could not confirm payment:\n" + error.message);
+    return;
+  }
+
+  await loadRegistrations();
+};
+</script>
+
+</body>
+</html>
