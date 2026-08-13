@@ -111,6 +111,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+
     // Supabase configuration
     // Replace SUPABASE_PUBLISHABLE_KEY with the Publishable API key from:
     // Supabase → Project Settings → API Keys. Never put a secret/service-role key here.
@@ -120,6 +121,17 @@
      SUPABASE_URL,
      SUPABASE_PUBLISHABLE_KEY
   );
+    
+  window.addEventListener('pageshow', () => {
+    const status = document.getElementById('status');
+
+    if (status) {
+      status.className = 'status';
+      status.textContent = '';
+    }
+  });
+
+  // your existing code continues here...
 
     const copyBtn=document.getElementById('copyAccount');
     copyBtn.addEventListener('click',async()=>{try{await navigator.clipboard.writeText('8131579706');copyBtn.textContent='Copied!';setTimeout(()=>copyBtn.textContent='Copy',1400)}catch(e){copyBtn.textContent='8131579706'}});
